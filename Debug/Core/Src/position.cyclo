@@ -1,0 +1,9 @@
+../Core/Src/position.c:47:6:set_right	1
+../Core/Src/position.c:57:6:set_left	1
+../Core/Src/position.c:68:6:read_right	3
+../Core/Src/position.c:78:6:read_left	3
+../Core/Src/position.c:88:6:set_dimentions	1
+../Core/Src/position.c:99:7:distance	1
+../Core/Src/position.c:102:7:angle	1
+../Core/Src/position.c:107:6:where_am_I	3
+../Core/Src/position.c:132:6:origin_again	1
