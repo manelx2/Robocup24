@@ -1,0 +1,10 @@
+../Core/Src/odometry.c:39:6:set_right_encoder	1
+../Core/Src/odometry.c:51:6:set_left_encoder	1
+../Core/Src/odometry.c:63:6:read_right_encoder	3
+../Core/Src/odometry.c:75:6:read_left_encoder	3
+../Core/Src/odometry.c:87:6:set_dimentions	1
+../Core/Src/odometry.c:95:6:update_position	3
+../Core/Src/odometry.c:128:6:speed_calcul	1
+../Core/Src/odometry.c:140:6:reset_position	1
+../Core/Src/odometry.c:148:7:ticks_to_distance	1
+../Core/Src/odometry.c:153:7:rad_to_deg	1

@@ -1,0 +1,6 @@
+../Core/Src/motors.c:12:6:set_motors	24	static
+../Core/Src/motors.c:27:6:stop_motors	4	static
+../Core/Src/motors.c:35:6:run_motors	4	static
+../Core/Src/motors.c:64:6:run_forward	16	static
+../Core/Src/motors.c:72:6:set_PWM_min	24	static
+../Core/Src/motors.c:80:6:PWM_sign_change_counter	4	static

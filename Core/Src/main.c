@@ -21,8 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "position.h"
-#include "test_motor"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,7 +78,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-   htimx=htim1;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -104,14 +103,6 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  set_right(&htim2, TIM2,400,4,1);
-  set_left(&htim3, TIM3,400,4,-1);
-  float d=0;
-  float theta;
-  read_right();
-  read_left();
-  set_dimentions(8,8,25.4,10);
-  motor_rotate();
 
   /* USER CODE END 2 */
 
