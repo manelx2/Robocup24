@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "odometry.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,14 +31,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-extern volatile unsigned int current_l_count;
-extern volatile unsigned int current_r_count;
-extern volatile unsigned int last_r_count;
-extern volatile unsigned int last_l_count;
-extern volatile unsigned int total_r_count;
-extern volatile unsigned int total_l_count;
-extern int d_lt;
-extern TIM_HandleTypeDef htimx;
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,6 +46,39 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
+extern TIM_HandleTypeDef* htim_right_encoder;
+extern TIM_TypeDef* right_TIM;
+extern int right_resolution;
+extern int right_precision;
+extern int right_sens;
+extern volatile unsigned int current_right_count;
+extern volatile unsigned int last_right_count;
+extern volatile long d_right;
+extern volatile long total_right_count;
+extern volatile float total_right,d_right_counter;
+extern volatile double right_speed,right_encoder_speed;
+
+extern TIM_HandleTypeDef* htim_left_Encoder;
+extern TIM_TypeDef* left_TIM;
+extern int left_resolution;
+extern int left_precision;
+extern int left_sens;
+extern volatile unsigned int current_left_count;
+extern volatile unsigned int last_left_count;
+extern volatile long d_left;
+extern volatile long total_left_count;
+extern volatile float total_left,d_left_counter,total_centre;
+extern volatile double left_speed,left_encoder_speed;
+
+extern volatile float dR,dL,dC;
+extern volatile float left_radius,right_radius,spacing_encoder,spacing_wheel;
+extern volatile float current_x;//           ==> 285
+extern volatile float current_y;//        ==> 676
+extern volatile float current_phi_rad;//PI/2;
+extern volatile double phi_speed,d_phi_counter;
+extern volatile float current_phi_deg;
+
+extern float ref_x,ref_y,dec;
 
 /* USER CODE END PV */
 
@@ -103,6 +130,9 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+  set_right_encoder(&htim2,TIM2,400,4,1);
+  set_left_encoder(&htim3,TIM3,400,4,-1);
+  set_dimentions(right_radius,left_radius,spacing_encoder,spacing_wheel);
 
   /* USER CODE END 2 */
 
@@ -110,9 +140,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  speed_calcul();
+	  update_position();
+	  if(current_x=100){
+	  	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	  }
+	  HAL_Delay(1000);
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
   }
   /* USER CODE END 3 */
 }
@@ -345,11 +384,22 @@ static void MX_TIM3_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+
+  /*Configure GPIO pin : PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
