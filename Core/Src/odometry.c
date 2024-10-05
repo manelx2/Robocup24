@@ -34,7 +34,7 @@ volatile float current_phi_rad=PI/2;//PI/2;
 volatile double phi_speed,d_phi_counter;
 volatile float current_phi_deg=90;
 
-float ref_x,ref_y,dec=100;
+float ref_x,ref_y,dec=0;
 
 void set_right_encoder(TIM_HandleTypeDef* htim, TIM_TypeDef* TIM, int resolution, int precision, int sens)
 {
@@ -65,6 +65,7 @@ void read_right_encoder(void)
 	last_right_count = current_right_count;
 	current_right_count = right_sens*right_TIM->CNT;
 	d_right = current_right_count - last_right_count;
+
 	if (d_right>30000)
 		d_right = d_right - 65535;
 	if (d_right<-30000)
@@ -84,7 +85,7 @@ void read_left_encoder(void)
 	total_left_count = total_left_count + d_left;
 }
 
-void set_dimentions(float right_wheel_radius, float left_wheel_radius, float encoder_spacing, float wheels_spacing)
+void set_dimension(float right_wheel_radius, float left_wheel_radius, float encoder_spacing, float wheels_spacing)
 {
 	right_radius = right_wheel_radius;
 	left_radius = left_wheel_radius;
@@ -118,7 +119,6 @@ void update_position(void)
 		current_phi_rad += 2*PI;
 	}
 	current_phi_deg = rad_to_deg(current_phi_rad);
-	//Robot navi 2020
 	millis++;
 	t++;
 	ref_x = current_x + cos(current_phi_rad) *dec;

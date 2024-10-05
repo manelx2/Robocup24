@@ -1,9 +1,9 @@
 ../Core/Src/odometry.c:39:6:set_right_encoder	24	static
 ../Core/Src/odometry.c:51:6:set_left_encoder	24	static
 ../Core/Src/odometry.c:63:6:read_right_encoder	4	static
-../Core/Src/odometry.c:75:6:read_left_encoder	4	static
-../Core/Src/odometry.c:87:6:set_dimentions	24	static
-../Core/Src/odometry.c:95:6:update_position	24	static
+../Core/Src/odometry.c:76:6:read_left_encoder	4	static
+../Core/Src/odometry.c:88:6:set_dimension	24	static
+../Core/Src/odometry.c:96:6:update_position	24	static
 ../Core/Src/odometry.c:128:6:speed_calcul	16	static
 ../Core/Src/odometry.c:140:6:reset_position	4	static
 ../Core/Src/odometry.c:148:7:ticks_to_distance	24	static

@@ -5,7 +5,7 @@
 
 void set_right_encoder(TIM_HandleTypeDef* htim, TIM_TypeDef* TIM, int resolution, int precision, int sens);
 void set_left_encoder(TIM_HandleTypeDef* htim, TIM_TypeDef* TIM, int resolution, int precision, int sens);
-void set_dimentions(float right_wheel_radius, float left_wheel_radius, float encoder_spacing, float wheels_spacing);
+void set_dimension(float right_wheel_radius, float left_wheel_radius, float encoder_spacing, float wheels_spacing);
 void speed_calcul(void);
 
 void read_right_encoder(void);
