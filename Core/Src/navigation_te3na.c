@@ -10,7 +10,7 @@
 #include "math.h"
 #include <stdlib.h>
 #include <stdbool.h>
-/*
+
 extern volatile long millis,t;
 extern unsigned long long int delta,t0;
 bool started=false;
@@ -62,14 +62,6 @@ float target_x, target_y;
 float target_x_prime, target_y_prime;
 float right_target_speed, left_target_speed;
 
-// curv
-float remain_distC=0,goalC=0;
-float speed_refR=0,speed_refL=0,prev_speed_refR=0,prev_speed_refL=0,new_speed_refR=0,new_speed_refL=0,speedC=0,speed_refC=0;
-float kpL = 15.5, kiL = 1.75;
-float kpR = 15.5, kiR = 1.75;
-float corde=0,tetaC=0,phi_prim=0,corde_angle=0,Xc=0,Yc=0,Rayon=0,phi_target_rad=0,sens_de_mouvement=0;
-float Distance_empietement=50;
-
 
 float x_obst,y_obst;
 float x_obst_abs,y_obst_abs;
@@ -99,123 +91,112 @@ void init (void)
 	right_error=0;
 	left_error=0;
 }
-void move_distance(float distance,float speed)
+void move_distance(float distance, float speed)
 {
-	init();
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-	int z=0;
-	//Set accel/decel distance
-	if (fabs(distance) < (speed*speed/ramp))
-	{
-		accel_dist = fabs(distance)/2;
-		decel_dist = fabs(distance)/2;
-		speed = sqrt (2*ramp*accel_dist);
-	}
-	else
-	{
-		accel_dist = (float)0.5*speed*speed/ramp;
-		decel_dist = (float)0.5*speed*speed/ramp;
-	}
-	while(((fabs(total_right-distance)>2)||(fabs(total_left-distance)>2))&& (speed*z/500)<((fabs(distance)*360/1000)+50))
-	{   z++;
-		x_obst_abs=current_x+x_obst*sin(current_phi_rad)+y_obst*cos(current_phi_rad);
-		y_obst_abs=current_y+y_obst*sin(current_phi_rad)-x_obst*cos(current_phi_rad);
-//			loop();
-//			HAL_Delay(5);
-		t0=t;
+    init();
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 
+    // Set acceleration and deceleration distances
+    if (fabs(distance) < (speed * speed / ramp)) {
+        accel_dist = fabs(distance) / 2;
+        decel_dist = fabs(distance) / 2;
+        speed = sqrt(2 * ramp * accel_dist);
+    } else {
+        accel_dist = 0.5 * speed * speed / ramp;
+        decel_dist = 0.5 * speed * speed / ramp;
+    }
+
+    while (fabs(total_right - distance) > 2 || fabs(total_left - distance) > 2) {
+        // Set movement direction (forward or backward)
+        sens = ((total_right + total_left) / 2 - distance) < 0 ? 1 : -1;
+
+        // Adjust speed for acceleration and deceleration phases
+        if (fabs((total_right + total_left) / 2) < accel_dist) {
+            speed_ref = sens * constrain(sqrt(ramp * fabs(total_right + total_left)), 0, 1000);
+        } else if (fabs((total_right + total_left) / 2 - distance) < decel_dist) {
+            speed_ref = sens * constrain(sqrt(2 * ramp * fabs((total_right + total_left) / 2 - distance)), 0, 1000);
+        } else {
+            speed_ref = sens * speed;
         }
-		//Accel/Decel Speed Set
-		if (((total_right+total_left)/2 -distance)<0)
-			sens = 1;
-		else
-			sens = -1;
-		if (fabs((total_right+total_left)/2) < accel_dist)
-			speed_ref = sens*50+sens*(constrain(sqrt (ramp*fabs(total_right+total_left))-50,0,1000));
 
-		else if (fabs((total_right+total_left)/2 -distance) < decel_dist)
-			if(i==0)
-				speed_ref = sens*10+sens*constrain((sqrt(2*ramp*fabs((total_right+total_left)/2 -distance))-10),0,1000);//fabs((total_right+total_left)/2 -distance)
-			else
-				speed_ref = sens*10+sens*constrain((sqrt(2*ramp_evitement*fabs((total_right+total_left)/2 -distance))-10),0,1000);
-		else
-			speed_ref = sens*speed;
-		//Right wheel regulation
-		right_error = speed_ref - right_speed;
-		i_right_error += right_error;
-		PWM_RB = kp * right_error + ki * i_right_error;
-		if (PWM_RB>PWM_Max) PWM_RB = PWM_Max;
-		if (PWM_RB<-PWM_Max) PWM_RB = -PWM_Max;
-		//Left wheel regulation
-		left_error = speed_ref - left_speed;
-		i_left_error += left_error;
-		PWM_LB = kp * left_error + ki * i_left_error;
-		if (PWM_LB>PWM_Max) PWM_LB = PWM_Max;
-		if (PWM_LB<-PWM_Max) PWM_LB = -PWM_Max;
-		//Orientation Correction²
-		left_correction = coef_correct_dist * (total_right-total_left);
-		right_correction = - left_correction;
+        // Right wheel regulation
+        right_error = speed_ref - right_speed;
+        i_right_error += right_error;
+        PWM_RB = kp * right_error + ki * i_right_error;
+        PWM_RB = constrain(PWM_RB, -PWM_Max, PWM_Max);
 
-		PWM_R = PWM_RB + right_correction ;
-		PWM_L = PWM_LB + left_correction;
+        // Left wheel regulation
+        left_error = speed_ref - left_speed;
+        i_left_error += left_error;
+        PWM_LB = kp * left_error + ki * i_left_error;
+        PWM_LB = constrain(PWM_LB, -PWM_Max, PWM_Max);
 
-		//Execution
-		run_motors();
-		do delta=t-t0;
-		while (delta<T);//taslih
-	}
-	i=0;
-	stop_motors();
+        // Orientation correction
+        float correction = coef_correct_dist * (total_right - total_left);
+        PWM_R = PWM_RB + correction;
+        PWM_L = PWM_LB - correction;
+
+        // Execute motor commands
+        run_motors();
+    }
+
+    // Stop motors when distance is reached
+    stop_motors();
 }
 
 void rotate(float angle, float speed)
 {
-	init();
-	//Set accel/decel distance
-	goal_distance = angle * PI * spacing_encoder/ 180;
-	if (fabs(goal_distance) < (2*speed*speed/rampR))
-	{
-		accel_dist = fabs(goal_distance)/2;
-		decel_dist = fabs(goal_distance)/2;
-		speed = sqrt(rampR*accel_dist);
-	}
-	else
-	{
-		accel_dist = (float)speed*speed/rampR;
-		decel_dist = (float)speed*speed/rampR;
-	}
-	while( (fabs(total_right-total_left)<fabs(goal_distance) || fabs(total_right-total_left)> fabs(goal_distance)+2 ) && evitementFlag )
-	{
-		nh.spinOnce();
-		t0=t;
-		//Accel/Decel Speed Set
-		if (((total_right-total_left)-goal_distance)<0)
-			sens = 1;
-		else
-			sens = -1;
-		if (fabs((total_right-total_left)) < accel_dist)
-			speed_ref = sens*constrain(sqrt(rampR*fabs(total_right-total_left)),50,1000);
-		else if (fabs((total_right-total_left)-goal_distance) < decel_dist)
-			speed_ref = sens*constrain(sqrt(rampR*fabs((total_right-total_left)-goal_distance)),10,1000);
-		else
-			speed_ref = sens*speed;
-		//Right wheel regulation
-		right_error = speed_ref - right_speed;
-		i_right_error += right_error;
-		PWM_RB = kp * right_error + ki * i_right_error;
-		//Left wheel regulation
-		left_error = - speed_ref - left_speed;
-		i_left_error += left_error;
-		PWM_LB = kp * left_error + ki * i_left_error;
-		//Position Correction;
-		left_correction = coef_correct_angle * (total_right + total_left);
-		right_correction = - left_correction;
-		PWM_R = PWM_RB + right_correction;
-		PWM_L = PWM_LB - left_correction;
-		//Execution
-		run_motors();
-		do delta=t-t0;
-		while (delta<T);
-	}
-	stop_motors();
-}*/
+    init();
+
+    // Set the goal distance based on the rotation angle
+    goal_distance = angle * PI * spacing_encoder / 180;
+
+    // Set acceleration and deceleration distances
+    if (fabs(goal_distance) < (2 * speed * speed / rampR)) {
+        accel_dist = fabs(goal_distance) / 2;
+        decel_dist = fabs(goal_distance) / 2;
+        speed = sqrt(rampR * accel_dist);
+    } else {
+        accel_dist = speed * speed / rampR;
+        decel_dist = speed * speed / rampR;
+    }
+
+    // Rotate until the desired angle is reached or there's an obstacle (evitementFlag)
+    while (fabs(total_right - total_left) < fabs(goal_distance) && evitementFlag) {
+        // Set rotation direction (clockwise or counter-clockwise)
+        sens = ((total_right - total_left) - goal_distance) < 0 ? 1 : -1;
+
+        // Adjust speed for acceleration and deceleration phases
+        if (fabs(total_right - total_left) < accel_dist) {
+            speed_ref = sens * constrain(sqrt(rampR * fabs(total_right - total_left)), 50, 1000);
+        } else if (fabs(total_right - total_left - goal_distance) < decel_dist) {
+            speed_ref = sens * constrain(sqrt(rampR * fabs(total_right - total_left - goal_distance)), 10, 1000);
+        } else {
+            speed_ref = sens * speed;
+        }
+
+        // Right wheel regulation
+        right_error = speed_ref - right_speed;
+        i_right_error += right_error;
+        PWM_RB = kp * right_error + ki * i_right_error;
+        PWM_RB = constrain(PWM_RB, -PWM_Max, PWM_Max);
+
+        // Left wheel regulation
+        left_error = -speed_ref - left_speed;
+        i_left_error += left_error;
+        PWM_LB = kp * left_error + ki * i_left_error;
+        PWM_LB = constrain(PWM_LB, -PWM_Max, PWM_Max);
+
+        // Position correction for maintaining angle stability
+        float correction = coef_correct_angle * (total_right + total_left);
+        PWM_R = PWM_RB + correction;
+        PWM_L = PWM_LB - correction;
+
+        // Execute motor commands
+        run_motors();
+    }
+
+    // Stop motors when rotation is complete
+    stop_motors();
+}
+
